@@ -1,10 +1,12 @@
+use sqlx::{Connection, PgConnection};
 use std::net::TcpListener;
+use zero2prod_axum::configuration::Settings;
 
 fn spawn_app() -> String {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to random port");
     let port = listener.local_addr().unwrap().port();
 
-    let server = zero2prod_axum::run(listener).expect("Failed to bind address");
+    let server = zero2prod_axum::startup::run(listener).expect("Failed to bind address");
     tokio::spawn(server);
 
     format!("http://127.0.0.1:{}", port)
@@ -30,7 +32,15 @@ async fn health_check_works() {
 async fn subscribe_returns_a_200_for_valid_form_data() {
     // Arrange
     let app_address = spawn_app();
+    let configuration = Settings::get_config().expect("Failed to read configuration");
+    let conn_string = configuration.database.connection_string();
+
+    let mut connection = PgConnection::connect(&conn_string)
+        .await
+        .expect("Failed to connect to Postgres.");
+
     let client = reqwest::Client::new();
+
     // Act
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
     let response = client
@@ -40,24 +50,36 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
         .send()
         .await
         .expect("Failed to execute request.");
+
     // Assert
     assert_eq!(200, response.status().as_u16());
+
+    let saved = sqlx::query!("SELECT email, name FROM subscriptions")
+        .fetch_one(&mut connection)
+        .await
+        .expect("Failed to fetch saved subscription.");
+
+    assert_eq!(saved.email, "ursula_le_guin@gmail.com");
+    assert_eq!(saved.name, "le guin");
 }
 
 #[tokio::test]
-async fn subscribe_returns_a_400_when_data_is_missing() {
+async fn subscribe_returns_a_422_for_invalid_data() {
     // Arrange
-    let app_address = spawn_app();
+    let addr = spawn_app();
+
     let client = reqwest::Client::new();
+
     let test_cases = vec![
         ("name=le%20guin", "missing the email"),
         ("email=ursula_le_guin%40gmail.com", "missing the name"),
         ("", "missing both name and email"),
     ];
+
     for (invalid_body, error_message) in test_cases {
         // Act
         let response = client
-            .post(&format!("{}/subscriptions", &app_address))
+            .post(format!("{addr}/subscriptions"))
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body(invalid_body)
             .send()
@@ -65,11 +87,10 @@ async fn subscribe_returns_a_400_when_data_is_missing() {
             .expect("Failed to execute request.");
         // Assert
         assert_eq!(
-            400,
+            422,
             response.status().as_u16(),
             // Additional customised error message on test failure
-            "The API did not fail with 400 Bad Request when the payload was {}.",
-            error_message
+            format!("The API did not fail with 422 Unprocessable Entity when the payload was {error_message}."),
         );
     }
 }

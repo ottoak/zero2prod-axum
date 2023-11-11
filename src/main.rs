@@ -1,9 +1,8 @@
 use std::net::TcpListener;
 use zero2prod_axum::run;
+
 #[tokio::main]
 async fn main() -> hyper::Result<()> {
-    // build our application with a single route
-    let listener =
-        TcpListener::bind("127.0.0.1:8000").expect("Failed to bind port");
+    let listener = TcpListener::bind("127.0.0.1:8000").expect("Failed to bind port");
     run(listener)?.await
 }

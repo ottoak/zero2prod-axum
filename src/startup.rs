@@ -1,22 +1,20 @@
-use crate::routes::{health_check, subscribe};
+use std::net::TcpListener;
+
 use axum::{
     routing::{get, post, IntoMakeService},
     Router, Server,
 };
 use hyper::server::conn::AddrIncoming;
 use sqlx::PgPool;
-use std::net::TcpListener;
+
+use crate::routes::{health_check, home, subscribe};
 
 type App = Server<AddrIncoming, IntoMakeService<Router>>;
-
-async fn root() -> &'static str {
-    "Hello, World!"
-}
 
 pub fn run(listener: TcpListener, pool: PgPool) -> hyper::Result<App> {
     // build our application
     let app = Router::new()
-        .route("/", get(root))
+        .route("/", get(home))
         .route("/health_check", get(health_check))
         .route("/subscriptions", post(subscribe))
         .with_state(pool);

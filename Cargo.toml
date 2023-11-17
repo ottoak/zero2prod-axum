@@ -16,10 +16,11 @@ name = "zero2prod-axum"
 axum = "0.6.20"
 hyper = "0.14.27"
 tokio = { version = "1.34.0", features = ["macros", "rt-multi-thread"] }
-serde = { version = "1", features = ["derive"]}
+serde = { version = "1", features = ["derive"] }
 config = "0.13.3"
 uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4.31", default-features = false, features = ["clock"] }
+tracing = { version = "0.1", features = ["log"] }
 
 [dependencies.sqlx]
 version = "0.7"

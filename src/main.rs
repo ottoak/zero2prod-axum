@@ -1,7 +1,6 @@
 use std::net::TcpListener;
 
-use secrecy::ExposeSecret;
-use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 
 use zero2prod_axum::configuration::Settings;
 use zero2prod_axum::startup::run;
@@ -14,10 +13,7 @@ async fn main() -> hyper::Result<()> {
 
     let configuration = Settings::get_config().expect("Failed to read configuration.");
 
-    let connection_pool =
-        PgPool::connect_lazy(configuration.database.connection_string().expose_secret())
-            .expect("Failed to connect to Postgres.");
-
+    let connection_pool = PgPoolOptions::new().connect_lazy_with(configuration.database.with_db());
     let addr = format!(
         "{}:{}",
         configuration.application.host, configuration.application.port

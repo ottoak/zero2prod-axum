@@ -19,6 +19,7 @@ use crate::routes::{health_check, home, subscribe};
 type App = Server<AddrIncoming, IntoMakeService<Router>>;
 
 pub fn run(listener: TcpListener, pool: PgPool) -> hyper::Result<App> {
+    // See https://docs.rs/tower-http/0.4.3/tower_http/request_id/index.html#using-trace
     let request_id_layer = ServiceBuilder::new()
         .set_x_request_id(MakeRequestUuid)
         .layer(

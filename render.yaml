@@ -2,11 +2,10 @@ services:
   # A Docker web service
   - type: web
     name: zero2prod-axum
+    plan: free
     runtime: docker
     repo: https://github.com/ottoak/zero2prod-axum.git # optional
-    region: oregon # optional (defaults to oregon)
     branch: render # optional (defaults to master)
-    numInstances: 1 # optional (defaults to 1)
     healthCheckPath: /health_check
     envVars:
       - key: APP_DATABASE__USERNAME
@@ -32,4 +31,5 @@ services:
 
 databases:
   - name: newsletter
+    plan: free
     postgresMajorVersion: 14

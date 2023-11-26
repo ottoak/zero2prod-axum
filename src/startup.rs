@@ -18,17 +18,6 @@ use crate::routes::{health_check, home, subscribe};
 
 type App = Server<AddrIncoming, IntoMakeService<Router>>;
 
-// #[derive(Clone)]
-// struct MakeRequestUuid;
-//
-// impl MakeRequestId for MakeRequestUuid {
-//     fn make_request_id<B>(&mut self, _: &Request<B>) -> Option<RequestId> {
-//         let request_id = Uuid::new_v4().to_string();
-//
-//         Some(RequestId::new(request_id.parse().unwrap()))
-//     }
-// }
-
 pub fn run(listener: TcpListener, pool: PgPool) -> hyper::Result<App> {
     let request_id_layer = ServiceBuilder::new()
         .set_x_request_id(MakeRequestUuid)

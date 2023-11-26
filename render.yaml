@@ -5,7 +5,7 @@ services:
     plan: free
     runtime: docker
     repo: https://github.com/ottoak/zero2prod-axum.git # optional
-    branch: render # optional (defaults to master)
+    branch: main # optional (defaults to master)
     healthCheckPath: /health_check
     envVars:
       - key: APP_DATABASE__USERNAME

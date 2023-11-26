@@ -30,6 +30,14 @@ once_cell = "1.18.0"
 secrecy = { version = "0.8.0", features = ["serde"] }
 serde-aux = "4.2.0"
 
+# OTEL
+opentelemetry = { version = "0.21.0" }
+opentelemetry-otlp = { version = "=0.14", features = ["reqwest-client", "reqwest-rustls", "http-proto", "tls"] }
+tonic = { version = "0.10.2", features = ["tls", "tls-roots"] }
+tracing-opentelemetry = "0.22.0"
+opentelemetry_sdk = { version = "0.21.0", features = ["rt-tokio"] }
+opentelemetry-stdout = { version = "0.2.0", features = ["trace"] }
+
 [dependencies.sqlx]
 version = "0.7.3"
 default-features = false
